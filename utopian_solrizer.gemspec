@@ -14,6 +14,8 @@ Gem::Specification.new do |s|
     'http://rubygems.org/gems/utopian_solrizer'
   s.license       = 'MIT'
 
+  s.add_runtime_dependency 'rsolr', '~> 2.1'
+  s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'utopian_ruby_api', '~> 0.0.3'
   s.add_development_dependency 'rspec', '~> 3.7'
 end
