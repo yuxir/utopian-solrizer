@@ -13,9 +13,12 @@ module UtopianSolrizer
         :moderator => post.moderator,
         :permlink  => post.permlink,
         :category  => post.category,
+        :type      => post.json_metadata['type'],
+        :tags      => post.json_metadata['tags'],
         :title     => post.title,
         :body      => post.body
       )
+      rsolr.commit
     end
 
     # Add posts by criterias
