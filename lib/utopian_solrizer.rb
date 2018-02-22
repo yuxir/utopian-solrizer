@@ -9,6 +9,7 @@ module UtopianSolrizer
     def solrize_post(post, solr_options)
       rsolr = RSolr.connect solr_options
       rsolr.add(
+        :id        => post.id,
         :author    => post.author,
         :moderator => post.moderator,
         :permlink  => post.permlink,
@@ -37,6 +38,17 @@ module UtopianSolrizer
     def query(solr_options, params)
       rsolr = RSolr.connect solr_options
       response = rsolr.select :params => params
+    end
+
+    # check if a solr document exists
+    def exist(solr_options, id)
+      params = { :q => 'id:'+id }
+      puts params
+      r = query(solr_options, params)
+      if r["response"]["numFound"].to_i > 0
+        return true
+      end
+      false
     end
 
   end
