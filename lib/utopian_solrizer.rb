@@ -8,18 +8,20 @@ module UtopianSolrizer
     # Add posts to solr
     def solrize_post(post, solr_options)
       rsolr = RSolr.connect solr_options
-      rsolr.add(
-        :id        => post.id,
-        :author    => post.author,
-        :moderator => post.moderator,
-        :permlink  => post.permlink,
-        :category  => post.category,
-        :type      => post.json_metadata['type'],
-        :tags      => post.json_metadata['tags'],
-        :title     => post.title,
-        :body      => post.body
-      )
-      rsolr.commit
+      if not exist(solr_options, post.id)
+        rsolr.add(
+          :id        => post.id,
+          :author    => post.author,
+          :moderator => post.moderator,
+          :permlink  => post.permlink,
+          :category  => post.category,
+          :type      => post.json_metadata['type'],
+          :tags      => post.json_metadata['tags'],
+          :title     => post.title,
+          :body      => post.body
+        )
+        rsolr.commit
+      end
     end
 
     # Add posts by criterias
@@ -42,13 +44,22 @@ module UtopianSolrizer
 
     # check if a solr document exists
     def exist(solr_options, id)
-      params = { :q => 'id:'+id }
+      params = { :q => 'id:'+id.to_s }
       puts params
       r = query(solr_options, params)
       if r["response"]["numFound"].to_i > 0
         return true
       end
       false
+    end
+
+    # delete solr document
+    def delete(solr_options, id)
+      if exist(solr_options, id)
+        rsolr = RSolr.connect solr_options
+        rsolr.delete_by_id(id)
+        rsolr.commit
+      end
     end
 
   end
