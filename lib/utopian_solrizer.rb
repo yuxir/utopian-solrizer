@@ -4,21 +4,34 @@ require 'rsolr'
 module UtopianSolrizer
   
   class << self
+    # define utopian solr fileds by following solr dynamic fields conventions
+    @@fields = {
+      "id"         => "id",
+      "author"     => "author_ssi",
+      "moderator"  => "moderator_ssim",
+      "permlink"   => "permlink_ssi",
+      "category"   => "category_ssi",
+      "tags"       => "tags_ssim",
+      "title"      => "title_tsim",
+      "body"       => "body_tsim",
+      "repository" => "repository_ssi"
+    }
+
     
-    # Add posts to solr
-    def solrize_post(post, solr_options)
+    # Add/update a post in solr
+    def solrize_post(post, solr_options, overwrite=true)
       rsolr = RSolr.connect solr_options
-      if not exist(solr_options, post.id)
+      if (overwrite==true) or (not exist(solr_options, post.id))
         rsolr.add(
-          :id        => post.id,
-          :author    => post.author,
-          :moderator => post.moderator,
-          :permlink  => post.permlink,
-          :category  => post.category,
-          :type      => post.json_metadata['type'],
-          :tags      => post.json_metadata['tags'],
-          :title     => post.title,
-          :body      => post.body
+          @@fields["id"]         => post.id,
+          @@fields["author"]     => post.author,
+          @@fields["moderator"]  => post.moderator,
+          @@fields["permlink"]   => post.permlink,
+          @@fields["category"]   => post.json_metadata['type'],
+          @@fields["tags"]       => post.json_metadata['tags'],
+          @@fields["title"]      => post.title,
+          @@fields["body"]       => post.body,
+          @@fields["repository"] => post.json_metadata['repository']['html_url']
         )
         rsolr.commit
       end
