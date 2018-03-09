@@ -43,9 +43,12 @@ module UtopianSolrizer
 
     # Add posts by criterias
     def solrize_posts_by_criterias(criterias, solr_options)
+      total_updated = 0
       UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
         solrize_post(post, solr_options)
+        total_updated = total_updated + 1
       end
+      total_updated
     end
 
     # Add posts within minutes to Solr

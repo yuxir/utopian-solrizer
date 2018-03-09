@@ -25,10 +25,7 @@ describe UtopianSolrizer do
   end
 
   it "has solrize_posts_by_criterias method" do
-    UtopianSolrizer.solrize_posts_by_criterias({"limit":1,"type":"development"}, @@solr_options).each do |post|
-      response = UtopianSolrizer.solrize_post(post, @@solr_options)
-      expect(response['responseHeader']['status']).to eq(0)
-    end
+    expect(UtopianSolrizer.solrize_posts_by_criterias({"limit":1,"type":"development"}, @@solr_options)).to be >= 0
   end
 
   it "has solrize_posts_within_minutes method" do
