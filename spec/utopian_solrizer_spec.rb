@@ -23,4 +23,12 @@ describe UtopianSolrizer do
     id = '0'
     expect(UtopianSolrizer.exist(@@solr_options, id)).to eq(false)
   end
+
+  it "has solrize_posts_by_criterias method" do
+    UtopianSolrizer.solrize_posts_by_criterias({"limit":1,"type":"development"}, @@solr_options).each do |post|
+      response = UtopianSolrizer.solrize_post(post, @@solr_options)
+      expect(response['responseHeader']['status']).to eq(0)
+    end
+  end
+
 end

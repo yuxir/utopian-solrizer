@@ -6,15 +6,16 @@ module UtopianSolrizer
   class << self
     # define utopian solr fileds by following solr dynamic fields conventions
     @@fields = {
-      "id"         => "id",
-      "author"     => "author_ssi",
-      "moderator"  => "moderator_ssim",
-      "permlink"   => "permlink_ssi",
-      "category"   => "category_ssi",
-      "tags"       => "tags_ssim",
-      "title"      => "title_tsim",
-      "body"       => "body_tsim",
-      "repository" => "repository_ssi"
+      'id'         => 'id',
+      'author'     => 'author_ssi',
+      'moderator'  => 'moderator_ssim',
+      'permlink'   => 'permlink_ssi',
+      'category'   => 'category_ssi',
+      'tags'       => 'tags_ssim',
+      'title'      => 'title_tsim',
+      'body'       => 'body_tsim',
+      'created'    => 'created_dts',
+      'repository' => 'repository_ssi'
     }
 
     
@@ -23,15 +24,16 @@ module UtopianSolrizer
       rsolr = RSolr.connect solr_options
       if (overwrite==true) or (not exist(solr_options, post.id))
         rsolr.add(
-          @@fields["id"]         => post.id,
-          @@fields["author"]     => post.author,
-          @@fields["moderator"]  => post.moderator,
-          @@fields["permlink"]   => post.permlink,
-          @@fields["category"]   => post.json_metadata['type'],
-          @@fields["tags"]       => post.json_metadata['tags'],
-          @@fields["title"]      => post.title,
-          @@fields["body"]       => post.body,
-          @@fields["repository"] => post.json_metadata['repository']['html_url']
+          @@fields['id']         => post.id,
+          @@fields['author']     => post.author,
+          @@fields['moderator']  => post.moderator,
+          @@fields['permlink']   => post.permlink,
+          @@fields['category']   => post.json_metadata['type'],
+          @@fields['tags']       => post.json_metadata['tags'],
+          @@fields['title']      => post.title,
+          @@fields['body']       => post.body,
+          @@fields['created']    => post.created,
+          @@fields['repository'] => post.json_metadata['repository']['html_url']
         )
         rsolr.commit
       end
@@ -44,12 +46,6 @@ module UtopianSolrizer
       end
     end
 
-
-    # Add approved posts 
-    def solrize_approved_posts_by_category(category, solr_options)
-   
-    end
-
     def query(solr_options, params)
       rsolr = RSolr.connect solr_options
       response = rsolr.select :params => params
@@ -58,7 +54,6 @@ module UtopianSolrizer
     # check if a solr document exists
     def exist(solr_options, id)
       params = { :q => 'id:'+id.to_s }
-      puts params
       r = query(solr_options, params)
       if r["response"]["numFound"].to_i > 0
         return true
