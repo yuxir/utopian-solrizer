@@ -31,4 +31,9 @@ describe UtopianSolrizer do
     end
   end
 
+  it "has solrize_posts_within_minutes method" do
+    expect(UtopianSolrizer.solrize_posts_within_minutes({"limit":1,"status":"reviewed","type":"development"}, @@solr_options, 60*2)).to be >= 0
+  end
+
+
 end

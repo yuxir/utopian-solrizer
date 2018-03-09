@@ -1,5 +1,7 @@
 require 'utopian_ruby_api'
 require 'rsolr'
+require 'date'
+require 'time'
 
 module UtopianSolrizer
   
@@ -46,6 +48,30 @@ module UtopianSolrizer
       end
     end
 
+    # Add posts within minutes to Solr
+    def solrize_posts_within_minutes(criterias, solr_options, minutes)
+      total_updated = 0
+      limit = 100
+      skip  = 0
+      reached_end = false
+      unless reached_end==true
+        criterias = {"limit":limit,"skip":skip}
+        UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
+          if (Time.parse(Time.now.to_s)-Time.parse(post.created)) <= minutes*60
+            #puts 'Solrizing post: ' + post.permlink
+            total_updated = total_updated + 1
+            solrize_post(post, solr_options)
+          else
+            reached_end=true
+            break
+          end
+        end
+        skip = skip + limit
+      end
+      total_updated
+    end
+
+    # search particular posts
     def query(solr_options, params)
       rsolr = RSolr.connect solr_options
       response = rsolr.select :params => params
