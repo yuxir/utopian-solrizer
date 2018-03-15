@@ -7,7 +7,7 @@ module UtopianSolrizer
   
   class << self
     # define utopian solr fileds by following solr dynamic fields conventions
-    @@fields = {
+    @@default_fields = {
       'id'         => 'id',
       'author'     => 'author_ssi',
       'moderator'  => 'moderator_ssim',
@@ -40,6 +40,40 @@ module UtopianSolrizer
         rsolr.commit
       end
     end
+
+    def post_json(post)
+      {
+          @@fields['id']         => post.id,
+          @@fields['author']     => post.author,
+          @@fields['moderator']  => post.moderator,
+          @@fields['permlink']   => post.permlink,
+          @@fields['category']   => post.json_metadata['type'],
+          @@fields['tags']       => post.json_metadata['tags'],
+          @@fields['title']      => post.title,
+          @@fields['body']       => post.body,
+          @@fields['created']    => post.created,
+          @@fields['repository'] => post.json_metadata['repository']['html_url']
+      }
+    end
+
+    # solrize from json
+    def solrize_from_json(json_documents, solr_options)
+      rsolr = RSolr.connect solr_options
+      rsolr.add json_documents
+    end
+
+    # Batch adding Solr document
+    def batch_solrize_posts_by_criterias(criterias, solr_options)
+      total_updated = 0
+      UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
+        total_updated = total_updated + 1
+      end
+
+      #solrize_post(post, solr_options)
+      batch_solrize_post documents
+      total_updated
+    end
+
 
     # Add posts by criterias
     def solrize_posts_by_criterias(criterias, solr_options)
