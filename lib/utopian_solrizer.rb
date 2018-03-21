@@ -18,9 +18,11 @@ module UtopianSolrizer
       'body'       => 'body_tsim',
       'created'    => 'created_dts',
       'repository' => 'repository_ssi'
-
-
-  
+      'flagged'    => 'flagged_ssi',
+      'reviewed'   => 'reviewed_ssi',
+      'pending'    => 'pending_ssi',
+      'last_update'=> 'last_update_dts',
+      'active'     => 'active_ssi'
     }
 
     # set default utopian fields to index
@@ -38,16 +40,32 @@ module UtopianSolrizer
     # Add/update a post in solr
     def solrize_post(post, solr_options, solr_fields=nil)
       rsolr = RSolr.connect solr_options
+      rsolr.add post_to_json(post, solr_fields=nil)
+      rsolr.commit
+    end
+
+    # Add/update posts in solr 
+    def solrize_posts(posts, solr_options, solr_fields=nil)
+      posts_json = []
+      posts.each do |post|
+        posts_json.append post_to_json(post, solr_fields=nil)
+      end
+      rsolr = RSolr.connect solr_options
+      rsolr.add posts_json
+      rsolr.commit
+    end
+
+    # convert post fields to json format
+    def post_to_json(post, solr_fields=nil)
       if solr_fields.nil? or solr_fields.length==0
         solr_fields = @@default_fields
       end
       solr_json = {}
 
       solr_fields.each do |f|
-        solr_json[@@utopian_solr_field_mapping[f]] = post_value(post, f)  
+        solr_json[@@utopian_solr_field_mapping[f]] = post_value(post, f)
       end
-      rsolr.add solr_json
-      rsolr.commit
+      solr_json
     end
 
     # return post value for a particular field_name
@@ -69,91 +87,33 @@ module UtopianSolrizer
       post.active                                  if field_name=='active'
     end
 
-    # Add/update a post in solr
- #   def solrize_post(post, solr_options, overwrite=true)
- #     rsolr = RSolr.connect solr_options
- #     if (overwrite==true) or (not exist(solr_options, post.id))
- #       rsolr.add(
- #         @@fields['id']         => post.id,
- #         @@fields['author']     => post.author,
- #         @@fields['moderator']  => post.moderator,
- #         @@fields['permlink']   => post.permlink,
- #         @@fields['category']   => post.json_metadata['type'],
- #         @@fields['tags']       => post.json_metadata['tags'],
- #         @@fields['title']      => post.title,
- #         @@fields['body']       => post.body,
- #         @@fields['created']    => post.created,
- #         @@fields['repository'] => post.json_metadata['repository']['html_url']
- #       )
- #       rsolr.commit
- #     end
- #   end
-
- #   def post_json(post)
- #     {
- #         @@fields['id']         => post.id,
- #         @@fields['author']     => post.author,
- #         @@fields['moderator']  => post.moderator,
- #         @@fields['permlink']   => post.permlink,
- #         @@fields['category']   => post.json_metadata['type'],
- #         @@fields['tags']       => post.json_metadata['tags'],
- #         @@fields['title']      => post.title,
- #         @@fields['body']       => post.body,
- #         @@fields['created']    => post.created,
- #         @@fields['repository'] => post.json_metadata['repository']['html_url']
- #     }
- #   end
-
-    # solrize from json
-    def solrize_from_json(json_documents, solr_options)
-      rsolr = RSolr.connect solr_options
-      rsolr.add json_documents
-    end
-
-    # Batch adding Solr document
-    def batch_solrize_posts_by_criterias(criterias, solr_options)
-      total_updated = 0
-      UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
-        total_updated = total_updated + 1
-      end
-
-      #solrize_post(post, solr_options)
-      batch_solrize_post documents
-      total_updated
-    end
-
-
     # Add posts by criterias
-    def solrize_posts_by_criterias(criterias, solr_options)
-      total_updated = 0
-      UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
-        solrize_post(post, solr_options)
-        total_updated = total_updated + 1
-      end
-      total_updated
+    def solrize_posts_by_criterias(criterias, solr_options, solr_fields)
+      posts = UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias)
+      solrize_posts(posts, solr_options, solr_fields=nil)
+      posts.length
     end
 
     # Add posts within minutes to Solr
-    def solrize_posts_within_minutes(criterias, solr_options, minutes)
+    def solrize_posts_within_minutes(criterias, solr_options, solr_fields, minutes)
       total_updated = 0
       limit = 100
       skip  = 0
       reached_end = false
+      posts = Set.new
       unless reached_end==true
         criterias = {"limit":limit,"skip":skip}
         UtopianRuby::UtopianRubyAPI.get_posts_obj(criterias).each do |post|
           if (Time.parse(Time.now.to_s)-Time.parse(post.created)) <= minutes*60
-            #puts 'Solrizing post: ' + post.permlink
-            total_updated = total_updated + 1
-            solrize_post(post, solr_options)
+            posts << post
           else
             reached_end=true
             break
           end
         end
-        skip = skip + limit
       end
-      total_updated
+      solrize_posts(posts, solr_options, solr_fields=nil)
+      posts.length
     end
 
     # search particular posts
