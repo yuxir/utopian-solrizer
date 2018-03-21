@@ -25,18 +25,11 @@ describe UtopianSolrizer do
   end
 
   it "has solrize_posts_by_criterias method" do
-    expect(UtopianSolrizer.solrize_posts_by_criterias({"limit":1,"type":"development"}, @@solr_options)).to be >= 0
+    expect(UtopianSolrizer.solrize_posts_by_criterias({"limit":1,"type":"development"}, @@solr_options, nil)).to be >= 0
   end
 
   it "has solrize_posts_within_minutes method" do
-    expect(UtopianSolrizer.solrize_posts_within_minutes({"limit":1,"status":"reviewed","type":"development"}, @@solr_options, 60*2)).to be >= 0
+    expect(UtopianSolrizer.solrize_posts_within_minutes({"limit":1,"status":"reviewed","type":"development"}, @@solr_options, nil, 60*2)).to be >= 0
   end
-
-  it "has post_json method" do
-    json = UtopianSolrizer.post_json(UtopianRuby::UtopianRubyAPI.get_post_obj('yuxi','utopian-api-ruby-client'))
-    puts json
-    UtopianSolrizer.solrize_from_json(json, @@solr_options)
-  end
-
 
 end
