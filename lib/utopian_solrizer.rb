@@ -17,7 +17,7 @@ module UtopianSolrizer
       'title'      => 'title_tsim',
       'body'       => 'body_tsim',
       'created'    => 'created_dts',
-      'repository' => 'repository_ssi'
+      'repository' => 'repository_ssi',
       'flagged'    => 'flagged_ssi',
       'reviewed'   => 'reviewed_ssi',
       'pending'    => 'pending_ssi',
